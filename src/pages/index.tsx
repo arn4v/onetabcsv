@@ -3,19 +3,14 @@ import parseOnetabExport, { jsonToCsv } from "~/lib/parser"
 import { v4 } from "uuid"
 
 export default function IndexPage(): JSX.Element {
-	const [textColumnTitle, setTextColumnTitle] = React.useState("Title")
-	const [urlColumnTitle, setUrlColumnTitle] = React.useState("URL")
 	const [onetabExport, setOnetabExport] = React.useState<string>("")
 	const [csvText, setCsvText] = React.useState<string>("")
 	const [exportId, setExportId] = React.useState<string>(null)
+	const [copyText, setCopyText] = React.useState<string>("Copy to clipboard.")
 	const csvTextareaRef = React.useRef<HTMLTextAreaElement>(null)
 
 	const convert = () => {
-		const json = parseOnetabExport(
-			onetabExport,
-			textColumnTitle,
-			urlColumnTitle
-		)
+		const json = parseOnetabExport(onetabExport)
 		const csv = jsonToCsv(json)
 		setCsvText(csv)
 		setExportId(v4())
@@ -27,27 +22,6 @@ export default function IndexPage(): JSX.Element {
 				<h1 className="text-xl font-bold mx-auto">
 					OneTab Export To CSV Converter
 				</h1>
-				<div className="flex flex-col bg-white shadow-md items-center w-full rounded p-8 border border-gray-100 gap-4">
-					<h1 className="font-bold">Customize column titles</h1>
-					<div className="flex items-center justify-between gap-12 w-full">
-						<div className="flex flex-col gap-1.5 w-full">
-							<label className="font-medium">Link text column title</label>
-							<input
-								onChange={(e) => setTextColumnTitle(e.target.value)}
-								value={textColumnTitle}
-								className="bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black rounded px-2 py-2 shadow"
-							/>
-						</div>
-						<div className="flex flex-col gap-1.5 w-full">
-							<label className="font-medium">URL column title</label>
-							<input
-								onChange={(e) => setUrlColumnTitle(e.target.value)}
-								value={urlColumnTitle}
-								className="bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black rounded px-2 py-2 shadow"
-							/>
-						</div>
-					</div>
-				</div>
 				<div className="flex flex-col flex-1 bg-white shadow-md items-center w-full rounded p-8 border border-gray-100 gap-4">
 					<h1 className="font-bold">Paste OneTab Export</h1>
 					<textarea
@@ -76,7 +50,12 @@ export default function IndexPage(): JSX.Element {
 						<div className="flex items-center justify-center gap-6 w-full">
 							<button
 								className="bg-white border-gray-300 border px-2 rounded shadow py-2 flex items-center justify-center gap-2 focus:outline-none focus:ring focus:ring-green-500"
-								onClick={() => document.execCommand("copy")}
+								onClick={() => {
+									csvTextareaRef.current.select()
+									document.execCommand("copy")
+									setCopyText("Copied to clipboard.")
+									setTimeout(() => setCopyText("Copy to clipboard"), 2500)
+								}}
 							>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -92,7 +71,7 @@ export default function IndexPage(): JSX.Element {
 										d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
 									/>
 								</svg>
-								<span>Copy CSV to clipboard</span>
+								<span>{copyText}</span>
 							</button>
 							<a
 								href={URL.createObjectURL(
